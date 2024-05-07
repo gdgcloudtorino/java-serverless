@@ -2,14 +2,14 @@
 FROM maven:3.9.6-eclipse-temurin-21-jammy AS builder
 #USER 185
 WORKDIR /code
-COPY --chown=185 mvnw /code/mvnw
-COPY --chown=185 .mvn /code/.mvn
+#COPY --chown=185 mvnw /code/mvnw
+#COPY --chown=185 .mvn /code/.mvn
 COPY --chown=185 pom.xml /code/
 
-RUN chmod +x mvnw
+#RUN chmod +x mvnw
 #RUN ./mvnw -B org.apache.maven.plugins:maven-dependency-plugin:3.1.2:go-offline
 COPY src /code/src
-RUN ./mvnw package -DskipTests
+RUN mvn package -DskipTests
 ####
 # This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode
 #
