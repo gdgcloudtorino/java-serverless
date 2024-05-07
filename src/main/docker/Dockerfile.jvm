@@ -1,6 +1,6 @@
 ## Stage 1 : build with maven builder image with native capabilities
 FROM maven:3.9.6-eclipse-temurin-21-jammy AS builder
-USER 185
+#USER 185
 WORKDIR /code
 COPY --chown=185 mvnw /code/mvnw
 COPY --chown=185 .mvn /code/.mvn
