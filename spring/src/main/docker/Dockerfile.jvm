@@ -9,7 +9,10 @@ COPY --chown=185 pom.xml /code/
 #RUN chmod +x mvnw
 #RUN ./mvnw -B org.apache.maven.plugins:maven-dependency-plugin:3.1.2:go-offline
 COPY src /code/src
-RUN mvn package -DskipTests
+RUN mvn package -DskipTests &&  \
+      mkdir target/dependency && \
+      cd target/dependency && \
+      jar -xf ../*.jar
 ####
 # This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode
 #
