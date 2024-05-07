@@ -1,11 +1,10 @@
 ## Stage 1 : build with maven builder image with native capabilities
 FROM maven:3.9.6-eclipse-temurin-21-jammy AS builder
-COPY --chown=quarkus:quarkus mvnw /code/mvnw
-COPY --chown=quarkus:quarkus .mvn /code/.mvn
-COPY --chown=quarkus:quarkus pom.xml /code/
 USER 185
 WORKDIR /code
-# /opt/graalvm/lib/security/cacerts
+COPY --chown=185 mvnw /code/mvnw
+COPY --chown=185 .mvn /code/.mvn
+COPY --chown=185 pom.xml /code/
 
 RUN chmod +x mvnw
 RUN ./mvnw -B org.apache.maven.plugins:maven-dependency-plugin:3.1.2:go-offline
