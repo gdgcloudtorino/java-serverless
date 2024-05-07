@@ -1,3 +1,16 @@
+## Stage 1 : build with maven builder image with native capabilities
+FROM maven:3.9.6-eclipse-temurin-21-jammy AS builder
+COPY --chown=quarkus:quarkus mvnw /code/mvnw
+COPY --chown=quarkus:quarkus .mvn /code/.mvn
+COPY --chown=quarkus:quarkus pom.xml /code/
+USER 185
+WORKDIR /code
+# /opt/graalvm/lib/security/cacerts
+
+RUN chmod +x mvnw
+RUN ./mvnw -B org.apache.maven.plugins:maven-dependency-plugin:3.1.2:go-offline
+COPY src /code/src
+RUN ./mvnw package -DskipTests
 ####
 # This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode
 #
@@ -83,10 +96,10 @@ ENV LANGUAGE='en_US:en'
 
 
 # We make four distinct layers so if there are application changes the library layers can be re-used
-COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
-COPY --chown=185 target/quarkus-app/*.jar /deployments/
-COPY --chown=185 target/quarkus-app/app/ /deployments/app/
-COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
+COPY --from=builder --chown=185 target/quarkus-app/lib/ /deployments/lib/
+COPY --from=builder --chown=185 target/quarkus-app/*.jar /deployments/
+COPY --from=builder --chown=185 target/quarkus-app/app/ /deployments/app/
+COPY --from=builder --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
 
 EXPOSE 8080
 USER 185
