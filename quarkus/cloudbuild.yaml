@@ -1,3 +1,4 @@
+
 steps:
   - name: gcr.io/cloud-builders/docker
     args:
@@ -5,44 +6,95 @@ steps:
       - '--no-cache'
       - '-t'
       - >-
-        $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
-      - .
+        $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/$_SERVICE_NAME:$COMMIT_SHA
+      - "."
       - '-f'
-      - src/main/docker/Dockerfile.jvm
+      - ./src/main/docker/Dockerfile.jvm
     id: Build
   - name: gcr.io/cloud-builders/docker
     args:
       - push
       - >-
-        $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+        $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/$_SERVICE_NAME:$COMMIT_SHA
     id: Push
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     args:
       - run
       - services
       - update
-      - $_SERVICE_NAME
+      - ${_SERVICE_NAME}-noboost
       - '--platform=managed'
       - >-
-        --image=$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+        --image=$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/$_SERVICE_NAME:$COMMIT_SHA
       - >-
         --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID
       - '--region=$_DEPLOY_REGION'
       - '--quiet'
     id: Deploy
     entrypoint: gcloud
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    args:
+      - run
+      - services
+      - update
+      - ${_SERVICE_NAME}-boost
+      - '--platform=managed'
+      - >-
+        --image=$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/$_SERVICE_NAME:$COMMIT_SHA
+      - >-
+        --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID
+      - '--region=$_DEPLOY_REGION'
+      - '--quiet'
+    id: Deploy-boost
+    entrypoint: gcloud
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '--no-cache'
+      - '-t'
+      - >-
+        $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/${_SERVICE_NAME}-native:$COMMIT_SHA
+      - "."
+      - '-f'
+      - ./src/main/docker/Dockerfile.native-micro
+    id: Build-Native
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - >-
+        $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/${_SERVICE_NAME}-native:$COMMIT_SHA
+    id: Push-native
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    args:
+      - run
+      - services
+      - update
+      - ${_SERVICE_NAME}-native
+      - '--platform=managed'
+      - >-
+        --image=$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/${_SERVICE_NAME}-native:$COMMIT_SHA
+      - >-
+        --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID
+      - '--region=$_DEPLOY_REGION'
+      - '--quiet'
+    id: Deploy-native
+    entrypoint: gcloud
+
 images:
   - >-
-    $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+    $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/$_SERVICE_NAME:$COMMIT_SHA
+  - >-
+    $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/${_SERVICE_NAME}-native:$COMMIT_SHA
 options:
   substitutionOption: ALLOW_LOOSE
   logging: CLOUD_LOGGING_ONLY
 substitutions:
   _AR_HOSTNAME: europe-west1-docker.pkg.dev
   _PLATFORM: managed
-  _SERVICE_NAME: java-serverless-quarkus-noboost
+  _SERVICE_NAME: java-serverless-quarkus
   _DEPLOY_REGION: europe-west1
 tags:
   - gcp-cloud-build-deploy-cloud-run
   - gcp-cloud-build-deploy-cloud-run-managed
-  - java-serverless-quarkus-noboost
+  - java-serverless-quarkus

@@ -22,7 +22,7 @@ steps:
         echo "no such file"
         continue
        fi
-       gcloud builds submit $line --config=${config}
+       gcloud builds submit --dir=$line --config=cloudbuild.yaml"
        done < /workspace/diff.txt
 options:
  logging: CLOUD_LOGGING_ONLY
