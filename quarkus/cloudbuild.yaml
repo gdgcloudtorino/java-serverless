@@ -6,6 +6,24 @@ steps:
       - '--no-cache'
       - '-t'
       - >-
+        $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/${_SERVICE_NAME}-native:$COMMIT_SHA
+      - "."
+      - '-f'
+      - ./src/main/docker/Dockerfile.native-micro
+    id: Build-Native
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - >-
+        $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/${_SERVICE_NAME}-native:$COMMIT_SHA
+    id: Push-native
+    
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '--no-cache'
+      - '-t'
+      - >-
         $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/$_SERVICE_NAME:$COMMIT_SHA
       - "."
       - '-f'
@@ -48,23 +66,7 @@ steps:
     id: Deploy-boost
     entrypoint: gcloud
 
-  - name: gcr.io/cloud-builders/docker
-    args:
-      - build
-      - '--no-cache'
-      - '-t'
-      - >-
-        $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/${_SERVICE_NAME}-native:$COMMIT_SHA
-      - "."
-      - '-f'
-      - ./src/main/docker/Dockerfile.native-micro
-    id: Build-Native
-  - name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - >-
-        $_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/java-serverless/${_SERVICE_NAME}-native:$COMMIT_SHA
-    id: Push-native
+
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     args:
       - run

@@ -1,0 +1,7 @@
+*
+!src/main
+!pom.xml
+!mvnw
+!.mvn
+!src/scripts
+!target

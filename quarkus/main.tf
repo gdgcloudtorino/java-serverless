@@ -14,6 +14,7 @@ resource "google_cloud_run_v2_service" "default" {
   
 
   template {
+    execution_environment = EXECUTION_ENVIRONMENT_GEN2
     containers {
       image = "${var.container_registry}/${var.project_id}/cloud-run-source-deploy/${var.repo_name}/${var.image_name}:latest"
       
@@ -23,6 +24,7 @@ resource "google_cloud_run_v2_service" "default" {
           memory = "512Mi"
         }
         startup_cpu_boost = var.cpu_boost
+        
       }
       startup_probe {
           http_get {

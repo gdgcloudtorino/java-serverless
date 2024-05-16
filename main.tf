@@ -1,67 +1,61 @@
 provider "google" {
-  project     = "my-project-id"
   region      = "europe-west1"
 }
 
-resource "google_cloud_run_v2_service" "quarkus_noboost" {
-  name     = var.service_quarkus
-  location = var.region
-  ingress = "INGRESS_TRAFFIC_ALL"
-
-  template {
-    containers {
-      image = "${var.container_registry}/${var.project_id}/cloud-run-source-deploy/${var.repo_name}/${var.service_quarkus}:latest"
-      resources {
-        limits = {
-          cpu    = "1"
-          memory = "512Mi"
-        }
-        startup_cpu_boost = false
-      }
-      startup_probe {
-          http_get {
-          path = "/q/health/ready"
-          port = 8080
-        }
-      }
-      liveness_probe {
-        http_get {
-          path = "/q/health/live"
-          port = 8080
-        }
-      }
-    }
-    
-  }
+module "quarkus_noboost" {
+  source = "./quarkus"
+  project_id = var.project_id
+  container_registry = var.container_registry
+  cpu_boost = false
+  image_name = var.service_quarkus
+  service_name = "${var.service_quarkus}-noboost"
+  region = var.region
 }
-resource "google_cloud_run_v2_service" "spring_noboost" {
-  name     = var.service_spring
-  location = var.region
-  ingress = "INGRESS_TRAFFIC_ALL"
+module "quarkus_boost" {
+  source = "./quarkus"
+  project_id = var.project_id
+  container_registry = var.container_registry
+  cpu_boost = true
+  image_name = var.service_quarkus
+  service_name = "${var.service_quarkus}-boost"
+  region = var.region
+}
+module "quarkus_native" {
+  source = "./quarkus"
+  project_id = var.project_id
+  container_registry = var.container_registry
+  cpu_boost = true
+  image_name = var.service_quarkus
+  region = var.region
+  service_name = "${var.service_quarkus}-native"
+}
 
-  template {
-    containers {
-      image = "${var.container_registry}/${var.project_id}/cloud-run-source-deploy/${var.repo_name}/${var.service_spring}:latest"
-      resources {
-        limits = {
-          cpu    = "1"
-          memory = "512Mi"
-        }
-        startup_cpu_boost = false
-      }
-      startup_probe {
-          http_get {
-          path = "/actuator/health/readiness"
-          port = 8080
-        }
-      }
-      liveness_probe {
-        http_get {
-          path = "/actuator/health/liveness"
-          port = 8080
-        }
-      }
-    }
     
-  }
+  
+module "spring_noboost" {
+  source = "./spring"
+  project_id = var.project_id
+  container_registry = var.container_registry
+  cpu_boost = false
+  image_name = var.service_spring
+  service_name = "${var.service_spring}-noboost"
+  region = var.region
+}
+module "spring_boost" {
+  source = "./spring"
+  project_id = var.project_id
+  container_registry = var.container_registry
+  cpu_boost = true
+  image_name = var.service_spring
+  service_name = "${var.service_spring}-boost"
+  region = var.region
+}
+module "spring_native" {
+  source = "./spring"
+  project_id = var.project_id
+  container_registry = var.container_registry
+  cpu_boost = true
+  image_name = var.service_spring
+  region = var.region
+  service_name = "${var.service_spring}-native"
 }

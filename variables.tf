@@ -1,9 +1,9 @@
 variable "service_spring" {
-  default = "java-serverless-spring-noboost"
+  default = "java-serverless-spring"
 }
 
 variable "service_quarkus" {
-  default = "java-serverless-quarkus-noboost"
+  default = "java-serverless-quarkus"
 }
 variable "container_registry" {
   default = "europe-west1-docker.pkg.dev"
